@@ -14,11 +14,14 @@ namespace SQLSchemaSourceControl.SourceControl
         string _username;
         string _password;
 
-        public SVN(string Username, string Password, bool SVNAuth) 
+        public SVN() 
         {
-            _username = Username;
-            _password = Password;
-            _svnAuth = SVNAuth;
+            NameValueCollection appSettings = System.Configuration.ConfigurationManager.AppSettings;
+
+            _svnAuth = bool.Parse(appSettings["SVNAuthentication"]);
+            _username = appSettings["SVNUserName"];
+            _password = appSettings["SVNPassword"];
+
         }
 
         public bool Add(string Path)

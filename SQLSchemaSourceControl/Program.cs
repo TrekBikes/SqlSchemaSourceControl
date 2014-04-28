@@ -14,12 +14,14 @@ using System.Net.Mail;
 
 namespace SQLSchemaSourceControl
 {
+    enum SourceControlProvider {git, SVN};
+
     class Program
     {
         private static string _mainFilePath;
-        private static bool _svnAuth;
-        private static string _svnUserName;
-        private static string _svnPassword;
+        //private static bool _svnAuth;
+        //private static string _svnUserName;
+        //private static string _svnPassword;
 
         private static bool _emailOnError;
         private static string _emailServer;
@@ -30,27 +32,31 @@ namespace SQLSchemaSourceControl
         {
             NameValueCollection appSettings = System.Configuration.ConfigurationManager.AppSettings;
 
-            try
-            {
-                _mainFilePath = appSettings["MainFolderPath"];
-                _svnAuth = bool.Parse(appSettings["SVNAuthentication"]);
-                _svnUserName = appSettings["SVNUserName"];
-                _svnPassword = appSettings["SVNPassword"];
+            _mainFilePath = appSettings["MainFolderPath"];
 
-                _emailOnError = bool.Parse(appSettings["EmailOnError"]);
-                _emailServer = appSettings["EmailServer"];
-                _emailFrom = appSettings["EmailFrom"];
-                _emailTo = appSettings["EmailTo"];
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine(string.Format("Config failure: \r\n\r\n{0}\r\n\r\n", e.ToString()));
-                Environment.Exit(0);
-            }
+            _emailOnError = bool.Parse(appSettings["EmailOnError"]);
+            _emailServer = appSettings["EmailServer"];
+            _emailFrom = appSettings["EmailFrom"];
+            _emailTo = appSettings["EmailTo"];
 
             System.Console.WriteLine("Config Ok");
 
-            SourceControl.ISourceControl sourceControl = new SourceControl.SVN(_svnUserName, _svnPassword, _svnAuth);
+            SourceControlProvider scp = (SourceControlProvider)System.Enum.Parse(typeof(SourceControlProvider), appSettings["SourceControl"]);
+
+            SourceControl.ISourceControl sourceControl;
+
+            if (scp == SourceControlProvider.git)
+            { 
+                sourceControl = new SourceControl.git();
+            }
+            else if (scp == SourceControlProvider.SVN)
+            {
+                sourceControl = new SourceControl.SVN();
+            }
+            else
+            {
+                throw new Exception("Bad SourceControlProvider");
+            }
 
             try
             {
@@ -126,12 +132,21 @@ namespace SQLSchemaSourceControl
                     }
                 }
 
-                // loop through all dirs in main folder and commit..
-                string[] dirs = Directory.GetDirectories(_mainFilePath);
 
-                foreach (string dir in dirs)
+                //git is one giant repo.  SVN is usuall one working copy per "server"
+                if (scp == SourceControlProvider.git)
                 {
-                    sourceControl.Commit(dir);
+                    sourceControl.Commit("");
+                }
+                else if (scp == SourceControlProvider.SVN)
+                {
+                    // loop through all dirs in main folder and commit..
+                    string[] dirs = Directory.GetDirectories(_mainFilePath);
+
+                    foreach (string dir in dirs)
+                    {
+                        sourceControl.Commit(dir);
+                    }
                 }
 
                 Console.WriteLine("done");
