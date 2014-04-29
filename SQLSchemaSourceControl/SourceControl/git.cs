@@ -11,17 +11,11 @@ namespace SQLSchemaSourceControl.SourceControl
 {
     class git : ISourceControl
     {
-        bool _gitAuth = false;
-        string _username;
-        string _password;
         string _path;
         string _repoRoot;
 
         public git() 
         {
-            _username = System.Configuration.ConfigurationManager.AppSettings["gitUsername"];
-            _password = System.Configuration.ConfigurationManager.AppSettings["gitPassword"];
-            _gitAuth = bool.Parse(System.Configuration.ConfigurationManager.AppSettings["gitAuthentication"]);
             _path = System.Configuration.ConfigurationManager.AppSettings["gitPath"];
             _repoRoot = System.Configuration.ConfigurationManager.AppSettings["MainFolderPath"];
         }
@@ -75,15 +69,6 @@ namespace SQLSchemaSourceControl.SourceControl
             {
                 gitCmd.Arguments = string.Format("{0} {1} ", Command, Message);
             }
-
-            //if (_gitAuth)
-            //{
-            //    gitCmd.Arguments = string.Format("{0} \"{1}\"{2} --username {3} --password {4}", Command, Path, Message, _username, _password);
-            //}
-            //else
-            //{
-            //   gitCmd.Arguments = string.Format("{0} \"{1}\"{2} ", Command, Path, Message);
-            //}
 
             System.Console.WriteLine(_path + " " + gitCmd.Arguments);
 

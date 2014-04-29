@@ -133,7 +133,7 @@ namespace SQLSchemaSourceControl
                 }
 
 
-                //git is one giant repo.  SVN is usuall one working copy per "server"
+                //git is one giant repo.  SVN is usually one working copy per "server"
                 if (scp == SourceControlProvider.git)
                 {
                     sourceControl.Commit("");
